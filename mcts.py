@@ -16,10 +16,13 @@ def run_mcts(config: MuZeroConfig, root: Node, action_history: ActionHistory,
   for _ in range(config.num_simulations):
     history = action_history.clone()
     node = root
+    player = node.to_play
     search_path = [node]
 
     while node.expanded():
       action, node = select_child(config, node, min_max_stats)
+      if config.zerosumgame:
+        player = Player(player.id*-1)
       history.add_action(action)
       search_path.append(node)
 
@@ -28,9 +31,9 @@ def run_mcts(config: MuZeroConfig, root: Node, action_history: ActionHistory,
     parent = search_path[-2]
     network_output = network.recurrent_inference(parent.hidden_state,
                                                  history.last_action())
-    expand_node(node, history.to_play(), history.action_space(), network_output)
+    expand_node(node, player, history.action_space(), network_output)
 
-    backpropagate(search_path, network_output.value, history.to_play(),
+    backpropagate(search_path, network_output.value, player,
                   config.discount, min_max_stats)
 
 # We expand a node using the value, reward and policy prediction obtained from
@@ -57,7 +60,7 @@ def select_child(config: MuZeroConfig, node: Node,
 # tree to the root.
 def backpropagate(search_path: List[Node], value: float, to_play: Player,
                   discount: float, min_max_stats: MinMaxStats):
-  for node in search_path:
+  for node in search_path[::-1]:
     node.value_sum += value if node.to_play == to_play else -value
     node.visit_count += 1
     min_max_stats.update(node.value())
