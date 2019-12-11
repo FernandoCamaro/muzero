@@ -36,7 +36,11 @@ class Node(object):
       return 0
     return self.value_sum / self.visit_count
 
-class Player(): pass
+class Player():
+  def __init__(self, id: int):
+    self.id = id
+  def __eq__(self, other):
+    return self.id == other.id
 
 class ActionHistory(object):
   """Simple history container used inside the search.
