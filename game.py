@@ -66,7 +66,7 @@ class Game(object):
     return targets
 
   def to_play(self) -> Player:
-    return Player()
+    return Player(self.environment.player)
 
   def action_history(self) -> ActionHistory:
     return ActionHistory(self.history, self.action_space_size)
