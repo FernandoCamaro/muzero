@@ -10,9 +10,9 @@ def muzero_training(config: MuZeroConfig):
   storage = SharedStorage(config)
   replay_buffer = ReplayBuffer(config)
 
-  for i in range(1,10+1): # num iterations
+  for i in range(1,2+1): # num iterations
     print("ITER:",i)
-    run_selfplay(config, storage, replay_buffer, 10) # num episodes per iteration
+    run_selfplay(config, storage, replay_buffer, 2) # num episodes per iteration
     # train_network(config, storage, replay_buffer)
     
 
