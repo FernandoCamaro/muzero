@@ -18,11 +18,11 @@ class Game(object):
 
   def terminal(self) -> bool:
     # Game specific termination rules.
-    pass
+    return self.environment.terminal()
 
   def legal_actions(self) -> List[Action]:
     # Game specific calculation of legal actions.
-    return []
+    return self.environment.getLegalActions()
 
   def apply(self, action: Action):
     reward = self.environment.step(action)

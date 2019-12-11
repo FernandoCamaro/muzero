@@ -7,7 +7,7 @@ from mcts import expand_node, run_mcts
 from tictactoe.TicTacToeEnv import TicTacToeEnv
 
 def muzero_training(config: MuZeroConfig):
-  storage = SharedStorage()
+  storage = SharedStorage(config)
   replay_buffer = ReplayBuffer(config)
 
   for i in range(1,10+1): # num iterations
@@ -46,5 +46,5 @@ def play_game(config: MuZeroConfig, network: Network) -> Game:
     game.store_search_statistics(root)
   return game
 
-config = make_board_game_config(16, 16, 0.25, TicTacToeEnv, 0.01)
+config = make_board_game_config(16+1, 16+1, 0.25, TicTacToeEnv, 0.01)
 muzero_training(config)

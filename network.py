@@ -11,13 +11,18 @@ class NetworkOutput(typing.NamedTuple):
 
 class Network(object):
 
+  def  __init__(self, action_space_size: int):
+    self.action_space_size = action_space_size
+
   def initial_inference(self, image) -> NetworkOutput:
     # representation + prediction function
-    return NetworkOutput(0, 0, {}, [])
+    action_logits = self.default_action_logits()
+    return NetworkOutput(0, 0, action_logits, [])
 
   def recurrent_inference(self, hidden_state, action) -> NetworkOutput:
     # dynamics + prediction function
-    return NetworkOutput(0, 0, {}, [])
+    action_logits = self.default_action_logits()
+    return NetworkOutput(0, 0, action_logits, [])
 
   def get_weights(self):
     # Returns the weights of this network.
@@ -27,5 +32,11 @@ class Network(object):
     # How many steps / batches the network has been trained for.
     return 0
 
-def make_uniform_network():
-  return Network()
+  def default_action_logits(self):
+    action_logits = {}
+    for i in range(self.action_space_size):
+      action_logits[Action(i)] = 1.0
+    return action_logits
+
+def make_uniform_network(action_space_size: int):
+  return Network(action_space_size)

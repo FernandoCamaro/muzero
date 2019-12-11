@@ -7,15 +7,16 @@ from util_leaf import Action, Node
 
 class SharedStorage(object):
 
-  def __init__(self):
+  def __init__(self, config: MuZeroConfig):
     self._networks = {}
+    self.config = config
 
   def latest_network(self) -> Network:
     if self._networks:
       return self._networks[max(self._networks.keys())]
     else:
       # policy -> uniform, value -> 0, reward -> 0
-      return make_uniform_network()
+      return make_uniform_network(self.config.action_space_size)
 
   def save_network(self, step: int, network: Network):
     self._networks[step] = network
@@ -64,8 +65,11 @@ def select_action(config: MuZeroConfig, num_moves: int, node: Node,
   ]
   t = config.visit_softmax_temperature_fn(
       num_moves=num_moves, training_steps=network.training_steps())
-  _, action = softmax_sample(visit_counts, t)
+  action = softmax_sample(visit_counts, t)
   return action
 
-def softmax_sample(distribution, temperature: float): #TODO
-  return 0, 0
+def softmax_sample(visit_counts, temperature: float): #TODO
+  p = numpy.array([x[0] for x in visit_counts])**(1/temperature)
+  p = p/p.sum()
+  actions = [x[1] for x in visit_counts]
+  return numpy.random.choice(actions, p=p)

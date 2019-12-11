@@ -6,7 +6,7 @@ KnownBounds = collections.namedtuple('KnownBounds', ['min', 'max'])
 
 class Action(object):
   def __init__(self, index: int):
-    self.index = index
+    self.index = int(index)
 
   def __hash__(self):
     return self.index

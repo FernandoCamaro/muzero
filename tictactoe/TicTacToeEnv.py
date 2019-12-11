@@ -5,6 +5,8 @@ from BoardEnvironment import BoardEnvironment
 from .TicTacToeLogic import Board
 import numpy as np
 
+
+from util_leaf import Action
 """
 Game class implementation for the game of TicTacToe.
 Based on the OthelloGame then getGameEnded() was adapted to new rules.
@@ -17,6 +19,8 @@ Based on the OthelloGame by Surag Nair.
 class TicTacToeEnv(BoardEnvironment):
     def __init__(self, n=4):
         self.n = n
+        self.board = self.getInitBoard()
+        self.player = 1
 
     def getInitBoard(self):
         # return initial board (numpy board)
@@ -30,6 +34,26 @@ class TicTacToeEnv(BoardEnvironment):
     def getActionSize(self):
         # return number of actions
         return self.n*self.n + 1
+    
+    def step(self, action):
+        next_board, next_player  = self.getNextState(self.board, self.player, action.index)
+        reward = self.getGameEnded(next_board, self.player) # I think it is the reward from the point of view of the player that took action
+        self.board = next_board
+        self.player = next_player
+        return reward
+
+        
+    def terminal(self):
+        return self.getGameEnded(self.board, self.player) != 0
+
+    def getLegalActions(self):
+        np_actions = self.getValidMoves(self.board, self.player)
+        legal_actions = []
+        for i,x in enumerate(np_actions):
+            if x == 1:
+                legal_actions.append(Action(i))
+        return legal_actions
+
 
     def getNextState(self, board, player, action):
         # if player takes action on board, return next (board,player)
@@ -47,7 +71,7 @@ class TicTacToeEnv(BoardEnvironment):
         valids = [0]*self.getActionSize()
         b = Board(self.n)
         b.pieces = np.copy(board)
-        legalMoves =  b.get_legal_moves(player)
+        legalMoves =  b.get_legal_moves(player) # it seems that pass is not a legal movement by default
         if len(legalMoves)==0:
             valids[-1]=1
             return np.array(valids)
