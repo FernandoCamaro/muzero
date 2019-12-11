@@ -16,6 +16,7 @@ class MuZeroConfig(object):
                lr_decay_steps: float,
                visit_softmax_temperature_fn,
                environment,
+               zerosumgame: bool,
                known_bounds: Optional[KnownBounds] = None):
     ### Self-Play
     self.action_space_size = action_space_size
@@ -23,6 +24,7 @@ class MuZeroConfig(object):
 
     self.visit_softmax_temperature_fn = visit_softmax_temperature_fn
     self.environment = environment
+    self.zerosumgame = zerosumgame
     self.max_moves = max_moves
     self.num_simulations = num_simulations
     self.discount = discount
@@ -81,6 +83,7 @@ def make_board_game_config(action_space_size: int, max_moves: int,
       lr_decay_steps=400e3,
       visit_softmax_temperature_fn=visit_softmax_temperature,
       environment = environment,
+      zerosumgame = True,
       known_bounds=KnownBounds(-1, 1))
 
 def make_atari_config(environment) -> MuZeroConfig:
@@ -105,4 +108,5 @@ def make_atari_config(environment) -> MuZeroConfig:
       lr_init=0.05,
       lr_decay_steps=350e3,
       visit_softmax_temperature_fn=visit_softmax_temperature,
-      environment = environment)
+      environment = environment,
+      zerosumgame = False)
