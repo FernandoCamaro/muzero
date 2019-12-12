@@ -70,7 +70,8 @@ class Game(object):
                         self.child_visits[current_index]))
       else:
         # States past the end of games are treated as absorbing states.
-        targets.append((0, 0, []))
+        targets.append((0, self.rewards[current_index], []))
+        break
     return targets
 
   def to_play(self) -> Player:
