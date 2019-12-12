@@ -42,6 +42,8 @@ class TicTacToeEnv(BoardEnvironment):
         self.player = next_player
         return reward
 
+    def state(self):
+        return self.getCanonicalForm(self.board, self.player)
         
     def terminal(self):
         return self.getGameEnded(self.board, self.player) != 0
