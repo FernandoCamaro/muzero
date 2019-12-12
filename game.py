@@ -57,8 +57,8 @@ class Game(object):
       else:
         value = 0
 
-      for i, reward in enumerate(self.rewards[current_index:bootstrap_index]):
-        sign = 1 if self.players[current_index+i] == self.players[current_index] else -1
+      for i, reward in enumerate(self.rewards[current_index+1:bootstrap_index]):
+        sign = 1 if self.players[current_index+1+i] == self.players[current_index] else -1
         value += sign*(reward * self.discount**i)  # pytype: disable=unsupported-operands
 
       if current_index < len(self.root_values):
