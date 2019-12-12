@@ -47,7 +47,7 @@ class ReplayBuffer(object):
 
   def sample_position(self, game) -> int:
     # Sample position from game either uniformly or according to some priority.
-    return -1
+    return numpy.random.randint(0, len(game.root_values))
 
 # At the start of each search, we add dirichlet noise to the prior of the root
 # to encourage the search to explore new actions.
