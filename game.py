@@ -9,6 +9,8 @@ class Game(object):
 
   def __init__(self, action_space_size: int, discount: float, Environment: Environment):
     self.environment = Environment()  # Game specific environment.
+    self.players = [] # will store which player is acting in each time-step
+    self.players.append(Player(self.environment.player))
     self.history = []
     self.rewards = []
     self.child_visits = []
@@ -26,6 +28,7 @@ class Game(object):
 
   def apply(self, action: Action):
     reward = self.environment.step(action)
+    self.players.append(Player(self.environment.player))
     self.rewards.append(reward)
     self.history.append(action)
 
@@ -42,20 +45,21 @@ class Game(object):
     # Game specific feature planes.
     return []
 
-  def make_target(self, state_index: int, num_unroll_steps: int, td_steps: int,
-                  to_play: Player):
+  def make_target(self, state_index: int, num_unroll_steps: int, td_steps: int):
     # The value target is the discounted root value of the search tree N steps
     # into the future, plus the discounted sum of all rewards until then.
     targets = []
     for current_index in range(state_index, state_index + num_unroll_steps + 1):
       bootstrap_index = current_index + td_steps
       if bootstrap_index < len(self.root_values):
-        value = self.root_values[bootstrap_index] * self.discount**td_steps
+        sign = 1 if self.players[bootstrap_index] == self.players[current_index] else -1
+        value = sign*(self.root_values[bootstrap_index] * self.discount**td_steps)
       else:
         value = 0
 
       for i, reward in enumerate(self.rewards[current_index:bootstrap_index]):
-        value += reward * self.discount**i  # pytype: disable=unsupported-operands
+        sign = 1 if self.players[current_index+i] == self.players[current_index] else -1
+        value += sign*(reward * self.discount**i)  # pytype: disable=unsupported-operands
 
       if current_index < len(self.root_values):
         targets.append((value, self.rewards[current_index],

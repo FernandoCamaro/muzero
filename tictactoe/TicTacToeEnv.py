@@ -37,7 +37,7 @@ class TicTacToeEnv(BoardEnvironment):
     
     def step(self, action):
         next_board, next_player  = self.getNextState(self.board, self.player, action.index)
-        reward = self.getGameEnded(next_board, self.player) # I think it is the reward from the point of view of the player that took action
+        reward = self.getGameEnded(next_board, next_player) # I think it is the reward from the point of view of the player that has to act in the new state.
         self.board = next_board
         self.player = next_player
         return reward
