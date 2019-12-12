@@ -12,7 +12,8 @@ class Game(object):
     self.players = [] # will store which player is acting in each time-step
     self.players.append(Player(self.environment.player))
     self.history = []
-    self.rewards = []
+    self.rewards = [100.]
+    self.observations = []
     self.child_visits = []
     self.root_values = []
     self.action_space_size = action_space_size
@@ -43,7 +44,10 @@ class Game(object):
 
   def make_image(self, state_index: int):
     # Game specific feature planes.
-    return []
+    if state_index == -1: # get new one
+      observation = self.environment.state()
+      self.observations.append(observation)
+    return self.observations[state_index]
 
   def make_target(self, state_index: int, num_unroll_steps: int, td_steps: int):
     # The value target is the discounted root value of the search tree N steps
