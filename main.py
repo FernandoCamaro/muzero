@@ -5,15 +5,22 @@ from util_leaf import Node
 from network import Network
 from mcts import expand_node, run_mcts
 from tictactoe.TicTacToeEnv import TicTacToeEnv
+from training import train_network
+
+from models.tictactoe_model import tictactoeNetwork as myNetwork
 
 def muzero_training(config: MuZeroConfig):
   storage = SharedStorage(config)
+  storage.save_network(step  = 0, network =  myNetwork(config.action_space_size, cuda = True))
   replay_buffer = ReplayBuffer(config)
 
   for i in range(1,2+1): # num iterations
     print("ITER:",i)
     run_selfplay(config, storage, replay_buffer, 2) # num episodes per iteration
-    # train_network(config, storage, replay_buffer)
+    # import pickle
+    # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
+    # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
+    train_network(config, storage, replay_buffer)
     
 
   return storage.latest_network()
@@ -21,6 +28,7 @@ def muzero_training(config: MuZeroConfig):
 def run_selfplay(config: MuZeroConfig, storage: SharedStorage,
                  replay_buffer: ReplayBuffer, num_episodes: int):
   network = storage.latest_network()
+  network.eval()
   for _ in range(num_episodes):
     game = play_game(config, network)
     replay_buffer.save_game(game)
