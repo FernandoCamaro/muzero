@@ -47,8 +47,6 @@ class tictactoeNetwork(Network):
         if self.cuda:
             image = image.cuda()
 
-        if self.training:
-            print("training")
         v, _, pi, hidden_state = self.model.initial_inference(image)
 
         if not self.training:
@@ -97,8 +95,8 @@ class tictactoeNetwork(Network):
             pi = pi.cpu().detach().numpy()
             hidden_state = hidden_state.cpu().detach().numpy()
             if Bs == 1:
-                v = v[0]
-                reward = reward[0]
+                v = v.item()
+                reward = reward.item()
                 pi = pi[0]
                 action_logits = {}
                 for i,p in enumerate(pi):
