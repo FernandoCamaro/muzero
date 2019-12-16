@@ -8,19 +8,27 @@ from tictactoe.TicTacToeEnv import TicTacToeEnv
 from training import train_network
 
 from models.tictactoe_model import tictactoeNetwork as myNetwork
+import torch
 
 def muzero_training(config: MuZeroConfig):
   storage = SharedStorage(config)
   storage.save_network(step  = 0, network =  myNetwork(config.action_space_size, cuda = True))
   replay_buffer = ReplayBuffer(config)
 
-  for i in range(1,2+1): # num iterations
+  for i in range(1,5+1): # num iterations
     print("ITER:",i)
-    run_selfplay(config, storage, replay_buffer, 2) # num episodes per iteration
+    run_selfplay(config, storage, replay_buffer, 100) # num episodes per iteration
     # import pickle
     # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
     # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
     train_network(config, storage, replay_buffer)
+  net = storage.latest_network()
+  torch.save({
+        'state_dict': net.model.state_dict()
+  }, "model.tar")
+  # checkpoint = torch.load("model.tar")
+  # net.model.load_state_dict(checkpoint["state_dict"])
+  # net.eval()
     
 
   return storage.latest_network()

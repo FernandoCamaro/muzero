@@ -44,7 +44,7 @@ class MuZeroConfig(object):
     self.known_bounds = known_bounds
 
     ### Training
-    self.training_steps = int(1000e3)
+    self.training_steps = int(1000)
     self.checkpoint_interval = int(1e3)
     self.window_size = int(1e6)
     self.batch_size = batch_size
@@ -75,9 +75,9 @@ def make_board_game_config(action_space_size: int, max_moves: int,
       max_moves=max_moves,
       discount=1.0,
       dirichlet_alpha=dirichlet_alpha,
-      num_simulations=800,
-      batch_size=4,
-      td_steps=max_moves,  # Always use Monte Carlo return.
+      num_simulations=20,
+      batch_size=16,
+      td_steps=5,  # Always use Monte Carlo return.
       num_actors=3000,
       lr_init=lr_init,
       lr_decay_steps=400e3,
