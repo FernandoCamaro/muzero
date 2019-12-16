@@ -2,7 +2,11 @@ from muzero import MuZeroConfig
 from util import SharedStorage, ReplayBuffer
 from network import Network
 
+import torch
 import torch.optim as optim
+from torch import nn
+import numpy as np
+
 
 
 def train_network(config: MuZeroConfig, storage: SharedStorage,
@@ -20,37 +24,38 @@ def train_network(config: MuZeroConfig, storage: SharedStorage,
 
 def update_weights(optimizer: optim, network: Network, batch):
   loss = 0
-  for image, actions, targets in batch:
+  mseloss = nn.MSELoss()
 
-    # Initial step, from the real observation.
-    value, reward, policy_logits, hidden_state = network.initial_inference(image)
-    predictions = [(1.0, value, reward, policy_logits)]
+  images = np.stack([sample[0] for sample in batch])
 
-    # Recurrent steps, from action and previous hidden state.
-    for action in actions:
-      # the action maybe not need to conver to torch tensor here.
-      value, reward, policy_logits, hidden_state = network.recurrent_inference(
-          hidden_state, [action])
-      predictions.append((1.0 / len(actions), value, reward, policy_logits))
+  for i in range(len(batch[0][2])):
+    if i == 0:
+      value, _, policy_logits, hidden_state = network.initial_inference(images)
+    else:
+      actions = [sample[1][i-1] for sample in batch]
+      value, reward, policy_logits, hidden_state = network.recurrent_inference(hidden_state, actions)
+    
+    # targets
+    target_value  = [sample[2][i][0] for sample in batch]
+    target_reward = [sample[2][i][1] for sample in batch]
+    target_policy = [sample[2][i][2] for sample in batch]
+    terminal      = [sample[2][i][3] for sample in batch]
 
-      #hidden_state = tf.scale_gradient(hidden_state, 0.5) Need to check how to deal with this. Maybe with a backward hook?
+    # value loss
+    loss += mseloss(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())
 
-    for prediction, target in zip(predictions, targets):
-      gradient_scale, value, reward, policy_logits = prediction
-      target_value, target_reward, target_policy = target
+    # reward loss
+    if i!= 0:
+      loss += mseloss(reward, torch.tensor(target_reward, dtype=torch.float32).unsqueeze(1).cuda())
 
-      l = (
-          scalar_loss(value, target_value) +
-          scalar_loss(reward, target_reward) +
-          tf.nn.softmax_cross_entropy_with_logits(
-              logits=policy_logits, labels=target_policy))
+    # policy loss
+    lpol = - (torch.tensor(target_policy).cuda()*policy_logits).sum(dim=1)
+    non_terminal = torch.tensor([not x for x in terminal], dtype=torch.float32).cuda()
+    loss += (lpol*non_terminal).mean()
 
-      loss += tf.scale_gradient(l, gradient_scale)
-
-  for weights in network.get_weights():
-    loss += weight_decay * tf.nn.l2_loss(weights)
-
-  optimizer.minimize(loss)
+  optimizer.zero_grad()
+  loss.backward()
+  optimizer.step()
 
 
 def scalar_loss(prediction, target) -> float:
