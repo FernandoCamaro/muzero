@@ -17,7 +17,7 @@ def muzero_training(config: MuZeroConfig):
 
   for i in range(1,5+1): # num iterations
     print("ITER:",i)
-    run_selfplay(config, storage, replay_buffer, 100) # num episodes per iteration
+    run_selfplay(config, storage, replay_buffer, 50) # num episodes per iteration
     # import pickle
     # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
     # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
@@ -62,5 +62,5 @@ def play_game(config: MuZeroConfig, network: Network) -> Game:
     game.store_search_statistics(root)
   return game
 
-config = make_board_game_config(16+1, 16+1, 0.25, TicTacToeEnv, 0.01)
+config = make_board_game_config(16+1, 16+1, 0.25, TicTacToeEnv, 0.001)
 muzero_training(config)
