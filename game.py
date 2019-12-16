@@ -1,7 +1,10 @@
 from typing import List
+import random
 
 from util_leaf import Action, Node, Player, ActionHistory
 from environment import Environment
+
+import numpy as np
 
 
 class Game(object):
@@ -67,15 +70,28 @@ class Game(object):
 
       if current_index < len(self.root_values):
         targets.append((value, self.rewards[current_index],
-                        self.child_visits[current_index]))
-      else:
+                        self.child_visits[current_index], False))
+      elif current_index == len(self.root_values):
         # States past the end of games are treated as absorbing states.
-        targets.append((0, self.rewards[current_index], []))
-        break
+        targets.append((0, self.rewards[current_index], self.uniform_action_prob_dist(), True))
+      else:
+        targets.append((0, 0, self.uniform_action_prob_dist(), True))
+        
     return targets
+
+  def get_actions(self, i, num_unroll_steps):
+    actual_actions_taken = self.history[i:i + num_unroll_steps]
+    extra_random_actions = [self.get_random_action() for _ in range(num_unroll_steps - len(actual_actions_taken))]
+    return actual_actions_taken + extra_random_actions
+
+  def get_random_action(self):
+    return Action(random.randint(0,self.action_space_size-1))
 
   def to_play(self) -> Player:
     return Player(self.environment.player)
 
   def action_history(self) -> ActionHistory:
     return ActionHistory(self.history, self.action_space_size)
+
+  def uniform_action_prob_dist(self):
+    return [1/self.action_space_size for _ in range(self.action_space_size)]
