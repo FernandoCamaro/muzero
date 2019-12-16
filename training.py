@@ -42,16 +42,32 @@ def update_weights(optimizer: optim, network: Network, batch):
     terminal      = [sample[2][i][3] for sample in batch]
 
     # value loss
-    loss += mseloss(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())
+    value_loss = mseloss(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())
+    loss += value_loss
 
     # reward loss
     if i!= 0:
-      loss += mseloss(reward, torch.tensor(target_reward, dtype=torch.float32).unsqueeze(1).cuda())
+      reward_loss = mseloss(reward, torch.tensor(target_reward, dtype=torch.float32).unsqueeze(1).cuda())
+      loss += reward_loss
 
     # policy loss
+    num_valid = 0
+    entropy = 0
+    for j in range(len(batch)):
+      if not terminal[j]:
+        num_valid += 1
+        valid = np.array(target_policy[j])
+        valid = valid[valid > 0]
+        entropy += -(valid*np.log(valid)).sum() 
     lpol = - (torch.tensor(target_policy).cuda()*policy_logits).sum(dim=1)
     non_terminal = torch.tensor([not x for x in terminal], dtype=torch.float32).cuda()
-    loss += (lpol*non_terminal).mean()
+    policy_loss = (lpol*non_terminal).mean()
+    loss += policy_loss
+
+    if i==0:
+      print(value_loss.item(), " ", policy_loss.item()-entropy/num_valid)
+    else:
+      print(value_loss.item(), reward_loss.item(), policy_loss.item()-entropy/num_valid)
 
   optimizer.zero_grad()
   loss.backward()
