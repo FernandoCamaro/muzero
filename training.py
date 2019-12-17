@@ -6,13 +6,14 @@ import torch
 import torch.optim as optim
 from torch import nn
 import numpy as np
+import copy
 
 
 
 def train_network(config: MuZeroConfig, storage: SharedStorage,
                   replay_buffer: ReplayBuffer):
   
-  network = storage.latest_network()
+  network = copy.deepcopy(storage.latest_network())
   network.train()
   optimizer = optim.SGD(network.parameters(), lr=config.lr_init, momentum=config.momentum, weight_decay=config.weight_decay ,nesterov=True)
 
@@ -20,6 +21,8 @@ def train_network(config: MuZeroConfig, storage: SharedStorage,
   for _ in range(config.training_steps):
     batch = replay_buffer.sample_batch(config.num_unroll_steps, config.td_steps)
     update_weights(optimizer, network, batch)
+  
+  return network
 
 
 def update_weights(optimizer: optim, network: Network, batch):
@@ -64,10 +67,10 @@ def update_weights(optimizer: optim, network: Network, batch):
     policy_loss = (lpol*non_terminal).mean()
     loss += policy_loss
 
-    if i==0:
-      print(value_loss.item(), " ", policy_loss.item()-entropy/num_valid)
-    else:
-      print(value_loss.item(), reward_loss.item(), policy_loss.item()-entropy/num_valid)
+    # if i==0:
+    #   print(value_loss.item(), " ", policy_loss.item()-entropy/num_valid)
+    # else:
+    #   print(value_loss.item(), reward_loss.item(), policy_loss.item()-entropy/num_valid)
 
   optimizer.zero_grad()
   loss.backward()
