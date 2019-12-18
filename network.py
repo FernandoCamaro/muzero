@@ -13,6 +13,7 @@ class Network(object):
 
   def  __init__(self, action_space_size: int):
     self.action_space_size = action_space_size
+    self.tr_steps = 0
 
   def initial_inference(self, image) -> NetworkOutput:
     # representation + prediction function
@@ -30,7 +31,7 @@ class Network(object):
 
   def training_steps(self) -> int:
     # How many steps / batches the network has been trained for.
-    return 0
+    return self.tr_steps
 
   def default_action_logits(self):
     action_logits = {}
