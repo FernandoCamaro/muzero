@@ -7,21 +7,25 @@ from mcts import expand_node, run_mcts
 from tictactoe.TicTacToeEnv import TicTacToeEnv
 from training import train_network
 
+
+
 from models.tictactoe_model import tictactoeNetwork as myNetwork
 import torch
+from tensorboardX import SummaryWriter
 
 def muzero_training(config: MuZeroConfig):
   storage = SharedStorage(config)
-  storage.save_network(step  = 0, network =  myNetwork(config.action_space_size, cuda = True))
+  storage.save_network(step  = 0, network =  myNetwork(config.action_space_size, cuda = True)) 
   replay_buffer = ReplayBuffer(config)
-
+  
   for i in range(1,5+1): # num iterations
     print("ITER:",i)
+    
     run_selfplay(config, storage, replay_buffer, 50) # num episodes per iteration
     # import pickle
     # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
     # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
-    trained_network = train_network(config, storage, replay_buffer)
+    trained_network = train_network(config, storage, replay_buffer, tb_logger, i)
     pwins, nwins, draws = pit_against(config, storage, trained_network)
     print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
     if pwins+nwins == 0 or float(nwins)/(pwins+nwins) < 0.55:
@@ -29,6 +33,7 @@ def muzero_training(config: MuZeroConfig):
     else:
         print('ACCEPTING NEW MODEL')
         storage.save_network(i, trained_network)
+        replay_buffer = ReplayBuffer(config)
   net = storage.latest_network()
   torch.save({
         'state_dict': net.model.state_dict()
@@ -102,5 +107,6 @@ def pit_against(config: MuZeroConfig, storage: SharedStorage, trained_network: N
   
   return wins_not_trained, wins_trainied, draws
 
+tb_logger = SummaryWriter("/tmp/tb")
 config = make_board_game_config(16+1, 16+1, 0.25, TicTacToeEnv, 0.001)
 muzero_training(config)
