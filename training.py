@@ -21,6 +21,7 @@ def train_network(config: MuZeroConfig, storage: SharedStorage,
   for batch_step in range(config.training_steps):
     batch = replay_buffer.sample_batch(config.num_unroll_steps, config.td_steps)
     update_weights(optimizer, network, batch, tb_logger, config.training_steps*iter_step + batch_step)
+    network.tr_steps += 1
   
   return network
 
