@@ -11,26 +11,28 @@ import copy
 
 
 def train_network(config: MuZeroConfig, storage: SharedStorage,
-                  replay_buffer: ReplayBuffer):
+                  replay_buffer: ReplayBuffer, tb_logger, iter_step):
   
   network = copy.deepcopy(storage.latest_network())
   network.train()
   optimizer = optim.SGD(network.parameters(), lr=config.lr_init, momentum=config.momentum, weight_decay=config.weight_decay ,nesterov=True)
 
 
-  for _ in range(config.training_steps):
+  for batch_step in range(config.training_steps):
     batch = replay_buffer.sample_batch(config.num_unroll_steps, config.td_steps)
-    update_weights(optimizer, network, batch)
+    update_weights(optimizer, network, batch, tb_logger, config.training_steps*iter_step + batch_step)
   
   return network
 
 
-def update_weights(optimizer: optim, network: Network, batch):
+def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   loss = 0
   mseloss = nn.MSELoss()
 
   images = np.stack([sample[0] for sample in batch])
-
+  total_value_loss = 0
+  total_reward_loss = 0
+  total_policy_loss = 0
   for i in range(len(batch[0][2])):
     if i == 0:
       value, _, policy_logits, hidden_state = network.initial_inference(images)
@@ -54,11 +56,9 @@ def update_weights(optimizer: optim, network: Network, batch):
       loss += reward_loss
 
     # policy loss
-    num_valid = 0
     entropy = 0
     for j in range(len(batch)):
       if not terminal[j]:
-        num_valid += 1
         valid = np.array(target_policy[j])
         valid = valid[valid > 0]
         entropy += -(valid*np.log(valid)).sum() 
@@ -67,14 +67,18 @@ def update_weights(optimizer: optim, network: Network, batch):
     policy_loss = (lpol*non_terminal).mean()
     loss += policy_loss
 
-    # if i==0:
-    #   print(value_loss.item(), " ", policy_loss.item()-entropy/num_valid)
-    # else:
-    #   print(value_loss.item(), reward_loss.item(), policy_loss.item()-entropy/num_valid)
+    
+    total_value_loss += value_loss.item()
+    total_reward_loss += reward_loss.item() if i!= 0 else 0
+    total_policy_loss += policy_loss.item()-entropy/len(batch)
 
   optimizer.zero_grad()
   loss.backward()
   optimizer.step()
+
+  tb_logger.add_scalar("value_loss",  total_value_loss, step)
+  tb_logger.add_scalar("reward_loss", total_reward_loss, step)
+  tb_logger.add_scalar("policy_loss", total_policy_loss, step)
 
 
 def scalar_loss(prediction, target) -> float:
