@@ -76,7 +76,7 @@ def play_game(config: MuZeroConfig, network: Network) -> Game:
 
 def pit_against(config: MuZeroConfig, storage: SharedStorage, trained_network: Network):
   player  = 1
-  num_games = 5
+  num_games = 20
   not_trained_network = storage.latest_network()
   not_trained_network.eval()
   trained_network.eval()
