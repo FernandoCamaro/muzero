@@ -28,6 +28,7 @@ def train_network(config: MuZeroConfig, storage: SharedStorage,
 
 def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   loss = 0
+  mseloss_noreduc = nn.MSELoss(reduction="none")
   mseloss = nn.MSELoss()
 
   images = np.stack([sample[0] for sample in batch])
@@ -52,8 +53,11 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
     target_policy = [sample[2][i][2] for sample in batch]
     terminal      = [sample[2][i][3] for sample in batch]
 
+    # non terminal
+    non_terminal = torch.tensor([not x for x in terminal], dtype=torch.float32).cuda()
+
     # value loss
-    value_loss = mseloss(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())/num_steps
+    value_loss = (mseloss_noreduc(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())/num_steps * non_terminal.unsqueeze(1)).mean()
     loss += value_loss
 
     # reward loss
@@ -69,7 +73,6 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
         valid = valid[valid > 0]
         entropy += -(valid*np.log(valid)).sum() 
     lpol = - (torch.tensor(target_policy).cuda()*policy_logits).sum(dim=1)
-    non_terminal = torch.tensor([not x for x in terminal], dtype=torch.float32).cuda()
     policy_loss = (lpol*non_terminal).mean()/num_steps
     loss += policy_loss
 
