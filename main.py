@@ -25,7 +25,7 @@ def muzero_training(config: MuZeroConfig):
     # import pickle
     # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
     # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
-    trained_network = train_network(config, storage, replay_buffer, tb_logger, i)
+    trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
     pwins, nwins, draws = pit_against(config, storage, trained_network)
     print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
     if pwins+nwins == 0 or float(nwins)/(pwins+nwins) < 0.55:
