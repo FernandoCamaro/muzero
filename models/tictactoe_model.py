@@ -78,11 +78,14 @@ class tictactoeNetwork(Network):
                 hidden_state = hidden_state.cuda()
         
         # action
-        action_plane = torch.zeros((Bs, self.action_space_size, H, W))
+        action_plane = torch.zeros((Bs, 1, H, W))
         if type(action) == Action:
             action = [action]
         for i,a in enumerate(action):
-            action_plane[i,a.index,:,:] = 1.0
+            if a.index < H*W:
+                row = int(a.index / W)
+                column = int(a.index % W)
+                action_plane[i,0,row,column] = 1.0
         if self.cuda:
             action_plane = action_plane.cuda()
 
@@ -149,7 +152,7 @@ class tictactoeModel(nn.Module):
         self.fc4 = nn.Linear(512, 1)
 
         # from hidden state to hidden state
-        self.conv7 = nn.Conv2d(self.num_channels + self.action_size, self.num_channels, 3, stride=1, padding=1)
+        self.conv7 = nn.Conv2d(self.num_channels + 1, self.num_channels, 3, stride=1, padding=1)
         self.conv8 = nn.Conv2d(self.num_channels,                    self.num_channels, 3, stride=1, padding=1)
         self.conv9 = nn.Conv2d(self.num_channels,                    self.num_channels, 3, stride=1, padding=1)
         self.bn7 = nn.BatchNorm2d(self.num_channels)
