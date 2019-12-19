@@ -17,30 +17,28 @@ def muzero_training(config: MuZeroConfig):
   storage = SharedStorage(config)
   storage.save_network(step  = 0, network =  myNetwork(config.action_space_size, cuda = True)) 
   replay_buffer = ReplayBuffer(config)
-  
-  for i in range(1,5+1): # num iterations
+
+  num_updates = 0
+  i = 1
+  while (num_updates < 15) && (i<50):
     print("ITER:",i)
     
-    run_selfplay(config, storage, replay_buffer, 50) # num episodes per iteration
+    run_selfplay(config, storage, replay_buffer, 300) # num episodes per iteration
     # import pickle
     # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
     # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
-    trained_network = train_network(config, storage, replay_buffer, tb_logger, i)
+    trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
     pwins, nwins, draws = pit_against(config, storage, trained_network)
     print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
     if pwins+nwins == 0 or float(nwins)/(pwins+nwins) < 0.55:
         print('REJECTING NEW MODEL')
     else:
+        num_updates += 1
         print('ACCEPTING NEW MODEL')
         storage.save_network(i, trained_network)
         replay_buffer = ReplayBuffer(config)
-  net = storage.latest_network()
-  torch.save({
-        'state_dict': net.model.state_dict()
-  }, "model.tar")
-  # checkpoint = torch.load("model.tar")
-  # net.model.load_state_dict(checkpoint["state_dict"])
-  # net.eval()
+        torch.save({'state_dict': trained_network.model.state_dict()}, "model_"+str(i)+".tar")
+    i = i+1
     
 
   return storage.latest_network()
