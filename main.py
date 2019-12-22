@@ -1,6 +1,6 @@
 from muzero import MuZeroConfig, make_board_game_config
 from game import Game
-from util import SharedStorage, ReplayBuffer, add_exploration_noise, select_action
+from util import SharedStorage, ReplayBuffer, add_exploration_noise, select_action, select_action_pit
 from util_leaf import Node
 from network import Network
 from mcts import expand_node, run_mcts
@@ -28,6 +28,7 @@ def muzero_training(config: MuZeroConfig):
     # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
     # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
     trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
+    torch.save({'state_dict': trained_network.model.state_dict()}, "model_"+str(i)+".tar")
     pwins, nwins, draws = pit_against(config, storage, trained_network)
     print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
     if pwins+nwins == 0 or float(nwins)/(pwins+nwins) < 0.55:
@@ -37,7 +38,7 @@ def muzero_training(config: MuZeroConfig):
         print('ACCEPTING NEW MODEL')
         storage.save_network(i, trained_network)
         replay_buffer = ReplayBuffer(config)
-        torch.save({'state_dict': trained_network.model.state_dict()}, "model_"+str(i)+".tar")
+        
     i = i+1
     
 
@@ -92,7 +93,7 @@ def pit_against(config: MuZeroConfig, storage: SharedStorage, trained_network: N
       expand_node(root, game.to_play(), game.legal_actions(),
                 cur_network.initial_inference(current_observation))
       run_mcts(config, root, game.action_history(), cur_network)
-      action = select_action(config, len(game.history), root, cur_network) # review how it is salected
+      action = select_action_pit(config, len(game.history), root, cur_network, 0.2) # review how it is salected
       game.apply(action)
       player *= -1
     whowins = game.environment.getGameEnded(game.environment.board, 1)

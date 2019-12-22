@@ -68,6 +68,14 @@ def select_action(config: MuZeroConfig, num_moves: int, node: Node,
   action = softmax_sample(visit_counts, t)
   return action
 
+def select_action_pit(config: MuZeroConfig, num_moves: int, node: Node,
+                  network: Network, t: float):
+  visit_counts = [
+      (child.visit_count, action) for action, child in node.children.items()
+  ]
+  action = softmax_sample(visit_counts, t)
+  return action
+
 def softmax_sample(visit_counts, temperature: float): #TODO
   p = numpy.array([x[0] for x in visit_counts])**(1/temperature)
   p = p/p.sum()
