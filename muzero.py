@@ -65,7 +65,7 @@ def make_board_game_config(action_space_size: int, max_moves: int,
                            lr_init: float) -> MuZeroConfig:
 
   def visit_softmax_temperature(num_moves, training_steps):
-    return max(1.0 -( training_steps // 1000 ) / 10 , 1e-3)
+    return max(1.0 -( training_steps // 5000 ) / 10 , 1e-3)
 
   return MuZeroConfig(
       action_space_size=action_space_size,
