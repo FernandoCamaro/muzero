@@ -73,9 +73,11 @@ class Game(object):
                         self.child_visits[current_index], False))
       elif current_index == len(self.root_values):
         # States past the end of games are treated as absorbing states.
-        targets.append((0, self.rewards[current_index], self.uniform_action_prob_dist(), True))
+        last_value = self.rewards[current_index]
+        targets.append((last_value, self.rewards[current_index], self.uniform_action_prob_dist(), True))
       else:
-        targets.append((0, 0, self.uniform_action_prob_dist(), True))
+        last_value *= -1
+        targets.append((last_value, 0, self.uniform_action_prob_dist(), True))
         
     return targets
 
