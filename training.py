@@ -57,7 +57,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
     non_terminal = torch.tensor([not x for x in terminal], dtype=torch.float32).cuda()
 
     # value loss
-    value_loss = (mseloss_noreduc(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())/num_steps * non_terminal.unsqueeze(1)).mean()
+    value_loss = (mseloss_noreduc(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())/num_steps ).mean()
     loss += value_loss
 
     # reward loss
