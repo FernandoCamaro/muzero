@@ -106,5 +106,5 @@ def pit_against(config: MuZeroConfig, storage: SharedStorage, trained_network: N
   return wins_not_trained, wins_trainied, draws
 
 tb_logger = SummaryWriter("/tmp/tb")
-config = make_board_game_config(16+1, 16+1, 0.25, TicTacToeEnv, 0.001)
+config = make_board_game_config(16+1, 16+1, 0.25, TicTacToeEnv, 0.01)
 muzero_training(config)
