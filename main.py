@@ -20,7 +20,7 @@ def muzero_training(config: MuZeroConfig):
 
   num_updates = 0
   i = 1
-  while (num_updates < 15) && (i<50):
+  while (num_updates < 15) and (i<50):
     print("ITER:",i)
     
     run_selfplay(config, storage, replay_buffer, 300) # num episodes per iteration
