@@ -75,9 +75,9 @@ def ucb_score(config: MuZeroConfig, parent: Node, child: Node,
                   config.pb_c_base) + config.pb_c_init
   pb_c *= math.sqrt(parent.visit_count) / (child.visit_count + 1)
 
-  prior_score = pb_c * child.prior
+  prior_score = pb_c * child.prior/(1/len(parent.children))
   if config.zerosumgame:
     value_score = min_max_stats.normalize(-child.value())
   else:
     value_score = min_max_stats.normalize(child.value())
-  return prior_score + value_score
+  return prior_score + value_score/0.5
