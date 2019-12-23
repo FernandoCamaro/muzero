@@ -22,14 +22,14 @@ def muzero_training(config: MuZeroConfig):
   i = 1
   while (num_updates < 15) and (i<50):
     print("ITER:",i)
-    
-    run_selfplay(config, storage, replay_buffer, 300) # num episodes per iteration
+    network = storage.latest_network() if num_updates > 0 else Network(config.action_space_size)
+    run_selfplay(config, network, replay_buffer, 300) # num episodes per iteration
     # import pickle
     # pickle.dump( replay_buffer, open( "save.pkl", "wb" ) )
     # replay_buffer = pickle.load( open( "save.pkl", "rb" ) )
     trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
     torch.save({'state_dict': trained_network.model.state_dict()}, "model_"+str(i)+".tar")
-    pwins, nwins, draws = pit_against(config, storage, trained_network)
+    pwins, nwins, draws = pit_against(config, network, trained_network)
     print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
     if pwins+nwins == 0 or float(nwins)/(pwins+nwins) < 0.55:
         print('REJECTING NEW MODEL')
@@ -44,9 +44,8 @@ def muzero_training(config: MuZeroConfig):
 
   return storage.latest_network()
 
-def run_selfplay(config: MuZeroConfig, storage: SharedStorage,
+def run_selfplay(config: MuZeroConfig, network: Network,
                  replay_buffer: ReplayBuffer, num_episodes: int):
-  network = storage.latest_network()
   network.eval()
   for _ in range(num_episodes):
     game = play_game(config, network)
@@ -73,10 +72,9 @@ def play_game(config: MuZeroConfig, network: Network) -> Game:
     game.store_search_statistics(root)
   return game
 
-def pit_against(config: MuZeroConfig, storage: SharedStorage, trained_network: Network):
+def pit_against(config: MuZeroConfig, not_trained_network: Network, trained_network: Network):
   player  = 1
   num_games = 20
-  not_trained_network = storage.latest_network()
   not_trained_network.eval()
   trained_network.eval()
   wins_not_trained = 0

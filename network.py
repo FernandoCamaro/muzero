@@ -39,5 +39,8 @@ class Network(object):
       action_logits[Action(i)] = 1.0
     return action_logits
 
+  def eval(self):
+    return None
+
 def make_uniform_network(action_space_size: int):
   return Network(action_space_size)
