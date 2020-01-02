@@ -49,7 +49,7 @@ class tictactoeNetwork(Network):
 
         v, _, pi, hidden_state = self.model.initial_inference(image)
 
-        if not self.training:
+        if not self.training and Bs == 1:
             v = v.item()
             pi = pi.cpu().squeeze().detach().numpy()
             action_logits = {}
