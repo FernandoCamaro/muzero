@@ -49,16 +49,7 @@ class tictactoeNetwork(Network):
 
         v, _, pi, hidden_state = self.model.initial_inference(image)
 
-        if not self.training and Bs == 1:
-            v = v.item()
-            pi = pi.cpu().squeeze().detach().numpy()
-            action_logits = {}
-            for i,p in enumerate(pi):
-                action_logits[Action(i)] = p
-            pi = action_logits
-            hidden_state = hidden_state.cpu().squeeze().detach().numpy()
-
-        return NetworkOutput(v, 0, pi, hidden_state)
+        return self.process_output(v, pi, hidden_state, None)
 
     def recurrent_inference(self, hidden_state, action: List[Action]) -> NetworkOutput:
         # hidden_state: Bs x num_channels x H x W or num_channels x H x W : numpy.ndarray
@@ -74,8 +65,8 @@ class tictactoeNetwork(Network):
         else: Exception("hidden_state shape not supported")
         if not self.training:
             hidden_state = torch.tensor(hidden_state).view(Bs, num_channels, H, W)
-            if self.cuda:
-                hidden_state = hidden_state.cuda()
+        if self.cuda:
+            hidden_state = hidden_state.cuda()
         
         # action
         action_plane = torch.zeros((Bs, 1, H, W))
@@ -91,15 +82,23 @@ class tictactoeNetwork(Network):
 
         # main call
         v, reward, pi, hidden_state = self.model.recurrent_inference(hidden_state, action_plane)
+        
+        return self.process_output(v, pi, hidden_state, reward)
 
+    def process_output(self, v, pi, hidden_state, reward = None):
+
+        Bs = hidden_state.shape[0]
+        
         if not self.training:
             v = v.cpu().detach().numpy()
-            reward = reward.cpu().detach().numpy()
+            if reward != None:
+                reward = reward.cpu().detach().numpy()
             pi = pi.cpu().detach().numpy()
             hidden_state = hidden_state.cpu().detach().numpy()
             if Bs == 1:
                 v = v.item()
-                reward = reward.item()
+                if reward != None:
+                    reward = reward.item()
                 pi = pi[0]
                 action_logits = {}
                 for i,p in enumerate(pi):
@@ -108,6 +107,7 @@ class tictactoeNetwork(Network):
                 hidden_state = hidden_state[0]
         
         return NetworkOutput(v, reward, pi, hidden_state)
+
 
     def parameters(self):
         return self.model.parameters()
