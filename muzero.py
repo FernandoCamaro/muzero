@@ -44,7 +44,7 @@ class MuZeroConfig(object):
     self.known_bounds = known_bounds
 
     ### Training
-    self.training_steps = int(5000)
+    self.training_steps = int(10000)
     self.checkpoint_interval = int(1e3)
     self.window_size = int(1e6)
     self.batch_size = batch_size
@@ -65,14 +65,14 @@ def make_board_game_config(action_space_size: int, max_moves: int,
                            lr_init: float) -> MuZeroConfig:
 
   def visit_softmax_temperature(num_moves, training_steps):
-    return max(1.0 -( training_steps // 5000 ) / 10 , 1e-3)
+    return max(1.0 -( training_steps // 10000 ) / 10 , 1e-3)
 
   return MuZeroConfig(
       action_space_size=action_space_size,
       max_moves=max_moves,
       discount=1.0,
       dirichlet_alpha=dirichlet_alpha,
-      num_simulations=50,
+      num_simulations=400,
       batch_size=128,
       td_steps=20,  # Always use Monte Carlo return.
       num_actors=3000,
