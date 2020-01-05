@@ -1,4 +1,5 @@
 import numpy
+import random
 
 from network import Network, make_uniform_network
 from muzero import MuZeroConfig
@@ -17,6 +18,10 @@ class SharedStorage(object):
     else:
       # policy -> uniform, value -> 0, reward -> 0
       return make_uniform_network(self.config.action_space_size)
+
+  def random_network(self) -> Network:
+    index = random.choice(list(self._networks.keys()))
+    return self._networks[index]
 
   def save_network(self, step: int, network: Network):
     self._networks[step] = network
