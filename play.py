@@ -15,7 +15,7 @@ config = make_board_game_config(16+1, 16+1, 0.25, TicTacToeEnv, 0.01)
 
 # load the trained model
 net =  myNetwork(config.action_space_size, cuda = True)
-checkpoint = torch.load("model_10.tar")
+checkpoint = torch.load("model_16.tar")
 net.model.load_state_dict(checkpoint["state_dict"])
 net.eval()
 
