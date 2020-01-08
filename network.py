@@ -75,18 +75,18 @@ class canonicalNetwork(Network, ABC):
 
 
     def initial_inference(self, obs) -> NetworkOutput:
-        # obs: numpy of array of shape BsxHxW or HxW: numpy array
+        # obs: numpy of array of shape BsxCxHxW or CxHxW: numpy array
         obs = obs.astype(np.float32)
 
         # prepare the observation to be feed to the network
-        if len(obs.shape) == 2:
-            H,W = obs.shape
+        if len(obs.shape) == 3:
+            C,H,W = obs.shape
             Bs = 1
-        elif len(obs.shape) == 3:
-            Bs, H, W = obs.shape
+        elif len(obs.shape) == 4:
+            Bs, C, H, W = obs.shape
         else:
             raise Exception("observation shape not supported")
-        obs = torch.tensor(obs).view(Bs, 1, H, W)
+        obs = torch.tensor(obs).view(Bs, C, H, W)
         if self.cuda:
             obs = obs.cuda()
         
@@ -106,8 +106,8 @@ class canonicalNetwork(Network, ABC):
       return action_plane
 
     def recurrent_inference(self, hidden_state, action: List[Action]) -> NetworkOutput:
-        # hidden_state: Bs x num_channels x H x W or num_channels x H x W : numpy.ndarray
-        #               Bs x num_channels x H x W torch.tensor
+        # hidden_state: Bs x C x H x W or C x H x W : numpy.ndarray
+        #               Bs x C x H x W torch.tensor
         # action: Bs or just one action
 
         # hidden state
@@ -127,7 +127,7 @@ class canonicalNetwork(Network, ABC):
         if type(action) == Action:
             action = [action]
         for i,a in enumerate(action):
-          action_plane[i,0] =  self.encode_action(action, H, W)
+          action_plane[i,0] =  self.encode_action(a, H, W)
         if self.cuda:
             action_plane = action_plane.cuda()
 
@@ -144,13 +144,13 @@ class canonicalNetwork(Network, ABC):
         
         if not self.training:
             v = v.cpu().detach().numpy()
-            if reward != None:
+            if reward is not None:
                 reward = reward.cpu().detach().numpy()
             pi = pi.cpu().detach().numpy()
             hidden_state = hidden_state.cpu().detach().numpy()
             if Bs == 1:
                 v = v.item()
-                if reward != None:
+                if reward is not None:
                     reward = reward.item()
                 pi = pi[0]
                 action_logits = {}
