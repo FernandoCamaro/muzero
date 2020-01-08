@@ -3,7 +3,7 @@ import gym_super_mario_bros
 from gym_super_mario_bros.actions import COMPLEX_MOVEMENT
 from util_leaf import Action
 
-import env_wrapper
+import mario.env_wrapper as env_wrapper
 from util_leaf import Action
 
 
@@ -13,7 +13,7 @@ class MarioEnv():
         env = gym_super_mario_bros.make('SuperMarioBros-v0')
         env = JoypadSpace(env, COMPLEX_MOVEMENT)
         frame_skip = 4
-        fshape = (256, 256)
+        fshape = (96, 96)
         env = env_wrapper.LifeLostEndEnv(env)
         env = env_wrapper.SkipEnv(env, skip=frame_skip)
         env = env_wrapper.BufferedObsEnv(env, n=4, skip=1, shape=fshape)
