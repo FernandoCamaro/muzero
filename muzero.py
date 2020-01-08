@@ -108,7 +108,7 @@ def make_atari_config(environment) -> MuZeroConfig:
       environment = environment,
       zerosumgame = False)
 
-def make_mario_config(environment) -> MuZeroConfig:
+def make_mario_config(action_space_size: int, environment, lr_init: float) -> MuZeroConfig:
 
   def visit_softmax_temperature(num_moves, training_steps):
     if training_steps < 500e3:
@@ -119,15 +119,15 @@ def make_mario_config(environment) -> MuZeroConfig:
       return 0.25
 
   return MuZeroConfig(
-      action_space_size=12,
-      max_moves=27000,  # Half an hour at action repeat 4.
+      action_space_size=action_space_size,
+      max_moves=800,
       discount=0.997,
       dirichlet_alpha=0.25,
       num_simulations=50,
       batch_size=1024,
       td_steps=15,
       num_actors=350,
-      lr_init=0.05,
+      lr_init=lr_init,
       lr_decay_steps=350e3,
       visit_softmax_temperature_fn=visit_softmax_temperature,
       environment = environment,
