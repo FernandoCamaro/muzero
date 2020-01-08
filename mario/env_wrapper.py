@@ -53,7 +53,7 @@ class BufferedObsEnv(gym.ObservationWrapper):
         if self.counter % self.skip == 0:
             self.buffer.append(np.expand_dims(np.ones(self.obs_shape), axis=2)*action*self.action_scale) # action plane
             self.buffer.append(obs * self.scale) 
-        obsNew = np.concatenate(self.buffer, axis=2)
+        obsNew = np.concatenate(self.buffer, axis=2).transpose(2,0,1)
         return obsNew.astype(np.float32) 
 
     def reset(self):
@@ -66,7 +66,7 @@ class BufferedObsEnv(gym.ObservationWrapper):
             self.buffer.append(np.zeros_like(obs))
         self.buffer.append(np.expand_dims(np.zeros(self.obs_shape), axis=2))
         self.buffer.append(obs * self.scale)
-        obsNew = np.concatenate(self.buffer, axis=2)
+        obsNew = np.concatenate(self.buffer, axis=2).transpose(2,0,1)
         return obsNew.astype(np.float32)
 
     def _convert(self, obs):
