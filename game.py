@@ -56,6 +56,8 @@ class Game(object):
     if state_index == -1: # get new one
       observation = self.environment.state()
       self.observations.append(observation)
+    if state_index >= len(self.observations):
+      state_index = len(self.observations) - 1
     return self.observations[state_index]
 
   def make_target(self, state_index: int, num_unroll_steps: int, td_steps: int):

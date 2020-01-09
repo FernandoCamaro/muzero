@@ -38,9 +38,11 @@ class ReplayBuffer(object):
   def sample_batch(self, num_unroll_steps: int, td_steps: int):
     games = [self.sample_game() for _ in range(self.batch_size)]
     game_pos = [(g, self.sample_position(g)) for g in games]
-    return [(g.make_image(i), g.get_actions(i,num_unroll_steps),
-             g.make_target(i, num_unroll_steps, td_steps))
-            for (g, i) in game_pos]
+    batch = []
+    for (g, i) in game_pos:
+      observations = [g.make_image(j) for j in range(i, i+num_unroll_steps+1)]
+      batch.append((observations, g.get_actions(i,num_unroll_steps), g.make_target(i, num_unroll_steps, td_steps)))
+    return batch
 
   def sample_game(self) -> Game:
     # Sample game from buffer either uniformly or according to some priority.

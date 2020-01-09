@@ -30,7 +30,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   loss = 0
   mseloss = nn.MSELoss()
 
-  images = np.stack([sample[0] for sample in batch])
+  images = np.stack([sample[0][0] for sample in batch])
   total_value_loss = 0
   total_reward_loss = 0
   total_policy_loss = 0
