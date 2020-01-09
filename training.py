@@ -28,7 +28,6 @@ def train_network(config: MuZeroConfig, storage: SharedStorage,
 
 def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   loss = 0
-  mseloss_noreduc = nn.MSELoss(reduction="none")
   mseloss = nn.MSELoss()
 
   images = np.stack([sample[0] for sample in batch])
@@ -57,7 +56,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
     non_terminal = torch.tensor([not x for x in terminal], dtype=torch.float32).cuda()
 
     # value loss
-    value_loss = (mseloss_noreduc(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())/num_steps ).mean()
+    value_loss = mseloss(value, torch.tensor(target_value, dtype=torch.float32).unsqueeze(1).cuda())/num_steps
     loss += value_loss
 
     # reward loss
@@ -88,8 +87,3 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   tb_logger.add_scalar("value_loss",  total_value_loss, step)
   tb_logger.add_scalar("reward_loss", total_reward_loss, step)
   tb_logger.add_scalar("policy_loss", total_policy_loss, step)
-
-
-def scalar_loss(prediction, target) -> float:
-  # MSE in board games, cross entropy between categorical values in Atari.
-  return -1
