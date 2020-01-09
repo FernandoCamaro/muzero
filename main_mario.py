@@ -9,6 +9,7 @@ from mcts import expand_node, run_mcts
 from mario.MarioEnv import MarioEnv
 from training import train_network
 
+from network import Network
 from mario.MarioNet import MarioNet as myNetwork
 
 def muzero_training(config: MuZeroConfig):
