@@ -29,11 +29,11 @@ def train_network(config: MuZeroConfig, storage: SharedStorage,
 def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   loss = 0
   mseloss_noreduc = nn.MSELoss(reduction="none")
-  # mseloss = nn.MSELoss()
+  mseloss = nn.MSELoss()
 
   images = np.stack([sample[0] for sample in batch])
   total_value_loss = 0
-  # total_reward_loss = 0
+  total_reward_loss = 0
   total_policy_loss = 0
   num_steps = len(batch[0][2])
   for i in range(num_steps):
@@ -49,7 +49,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
     
     # targets
     target_value  = [sample[2][i][0] for sample in batch]
-    # target_reward = [sample[2][i][1] for sample in batch]
+    target_reward = [sample[2][i][1] for sample in batch]
     target_policy = [sample[2][i][2] for sample in batch]
     terminal      = [sample[2][i][3] for sample in batch]
 
@@ -61,9 +61,9 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
     loss += value_loss
 
     # reward loss
-    # if i!= 0:
-    #   reward_loss = mseloss(reward, torch.tensor(target_reward, dtype=torch.float32).unsqueeze(1).cuda())/num_steps
-    #   loss += reward_loss
+    if i!= 0:
+      reward_loss = mseloss(reward, torch.tensor(target_reward, dtype=torch.float32).unsqueeze(1).cuda())/num_steps
+      loss += reward_loss
 
     # policy loss
     entropy = 0
@@ -78,7 +78,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
 
     
     total_value_loss += value_loss.item()
-    # total_reward_loss += reward_loss.item() if i!= 0 else 0
+    total_reward_loss += reward_loss.item() if i!= 0 else 0
     total_policy_loss += policy_loss.item()-entropy/(len(batch)*num_steps)
 
   optimizer.zero_grad()
@@ -86,7 +86,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   optimizer.step()
 
   tb_logger.add_scalar("value_loss",  total_value_loss, step)
-  # tb_logger.add_scalar("reward_loss", total_reward_loss, step)
+  tb_logger.add_scalar("reward_loss", total_reward_loss, step)
   tb_logger.add_scalar("policy_loss", total_policy_loss, step)
 
 
