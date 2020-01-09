@@ -115,8 +115,10 @@ def make_mario_config(action_space_size: int, environment, lr_init: float) -> Mu
       return 1.0
     elif training_steps < 100e3:
       return 0.5
+    elif training_steps < 200e3:
+      return 0.2
     else:
-      return 0.25
+      return 0.1
 
   return MuZeroConfig(
       action_space_size=action_space_size,
