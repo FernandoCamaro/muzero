@@ -111,9 +111,9 @@ def make_atari_config(environment) -> MuZeroConfig:
 def make_mario_config(action_space_size: int, environment, lr_init: float) -> MuZeroConfig:
 
   def visit_softmax_temperature(num_moves, training_steps):
-    if training_steps < 500e3:
+    if training_steps < 50e3:
       return 1.0
-    elif training_steps < 750e3:
+    elif training_steps < 100e3:
       return 0.5
     else:
       return 0.25
@@ -124,7 +124,7 @@ def make_mario_config(action_space_size: int, environment, lr_init: float) -> Mu
       discount=0.997,
       dirichlet_alpha=0.25,
       num_simulations=50,
-      batch_size=1024,
+      batch_size=16,
       td_steps=15,
       num_actors=350,
       lr_init=lr_init,
