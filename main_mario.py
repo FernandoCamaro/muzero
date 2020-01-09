@@ -5,7 +5,6 @@ from muzero import MuZeroConfig, make_mario_config
 from game import Game
 from util import SharedStorage, ReplayBuffer, add_exploration_noise, select_action, select_action_pit
 from util_leaf import Node
-from network import Network
 from mcts import expand_node, run_mcts
 from mario.MarioEnv import MarioEnv
 from training import train_network
@@ -20,10 +19,13 @@ def muzero_training(config: MuZeroConfig):
   i = 1
   while i<50:
     print("ITER:",i)
-    network = storage.latest_network() if i > 0 else Network(config.action_space_size)
+    network = storage.latest_network()
     run_selfplay(config, network, replay_buffer, 300)
     trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
-    torch.save({'state_dict': trained_network.model.state_dict()}, "model_"+str(i)+".tar")
+    torch.save({'state_dict': {"pred": trained_network.pred_model.state_dict(),
+                               "rep" : trained_network.rep_model.state_dict(),
+                               "dyn" : trained_network.syn_model.state_dict()}}
+                , "model_"+str(i)+".tar")
     storage.save_network(i, trained_network)
     replay_buffer = ReplayBuffer(config)
     i = i+1
