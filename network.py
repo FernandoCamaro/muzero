@@ -164,8 +164,8 @@ class canonicalNetwork(Network, ABC):
 
     def parameters(self):
       params = list()
-      for model in self.models():
-        params += model.params()
+      for model in self.models:
+        params += model.parameters()
       return params
 
 class boardNetwork(canonicalNetwork):
