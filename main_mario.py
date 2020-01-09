@@ -25,7 +25,7 @@ def muzero_training(config: MuZeroConfig):
     trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
     torch.save({'state_dict': {"pred": trained_network.pred_model.state_dict(),
                                "rep" : trained_network.rep_model.state_dict(),
-                               "dyn" : trained_network.syn_model.state_dict()}}
+                               "dyn" : trained_network.dyn_model.state_dict()}}
                 , "model_"+str(i)+".tar")
     storage.save_network(i, trained_network)
     replay_buffer = ReplayBuffer(config)
