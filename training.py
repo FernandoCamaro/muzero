@@ -40,7 +40,6 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
     observations = np.stack([sample[0][i] for sample in batch])
     if i == 0:
       value, _, policy_logits, hidden_state = network.initial_inference(observations)
-      hidden_state_from_obs  = hidden_state.detach()
     else:
       actions = [sample[1][i-1] for sample in batch]
       value, reward, policy_logits, hidden_state = network.recurrent_inference(hidden_state, actions)
@@ -83,10 +82,8 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
 
     # dynamic model loss in order to predict the next hidden state
     if i!=0:
-      _, _, _, predicted_hidden_state = network.recurrent_inference(previous_hidden_state_from_obs, actions)
-      dynamics_loss = mseloss(predicted_hidden_state, hidden_state_from_obs)/num_steps
+      dynamics_loss = mseloss(hidden_state, hidden_state_from_obs)/num_steps
       loss += dynamics_loss
-    previous_hidden_state_from_obs = hidden_state_from_obs
     
     total_value_loss += value_loss.item()
     total_reward_loss += reward_loss.item() if i!= 0 else 0
@@ -98,7 +95,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   optimizer.zero_grad()
   loss.backward()
   optimizer.step()
-  del loss, value, reward, policy_logits, hidden_state, previous_hidden_state_from_obs, hidden_state_from_obs
+  del loss, value, reward, policy_logits, hidden_state, hidden_state_from_obs
 
   tb_logger.add_scalar("value_loss",  total_value_loss, step)
   tb_logger.add_scalar("reward_loss", total_reward_loss, step)
