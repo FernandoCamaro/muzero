@@ -1,5 +1,7 @@
 import torch
 from tensorboardX import SummaryWriter
+import pickle
+import time
 
 from muzero import MuZeroConfig, make_mario_config
 from game import Game
@@ -9,6 +11,7 @@ from mcts import expand_node, run_mcts
 from mario.MarioEnv import MarioEnv
 from training import train_network
 
+from network import Network
 from mario.MarioNet import MarioNet as myNetwork
 
 def muzero_training(config: MuZeroConfig):
@@ -20,11 +23,16 @@ def muzero_training(config: MuZeroConfig):
   while i<50:
     print("ITER:",i)
     network = storage.latest_network()
-    run_selfplay(config, network, replay_buffer, 300)
+    t0 = time.time()
+    run_selfplay(config, network, replay_buffer, 50)
+    print("playing time (s):",time.time()-t0)
+    pickle.dump( replay_buffer.buffer, open( "repbuffer_"+str(i)+".pkl", "wb" ) )
+    t0 = time.time()
     trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
+    print("training time (s):",time.time()-t0)
     torch.save({'state_dict': {"pred": trained_network.pred_model.state_dict(),
                                "rep" : trained_network.rep_model.state_dict(),
-                               "dyn" : trained_network.syn_model.state_dict()}}
+                               "dyn" : trained_network.dyn_model.state_dict()}}
                 , "model_"+str(i)+".tar")
     storage.save_network(i, trained_network)
     replay_buffer = ReplayBuffer(config)
