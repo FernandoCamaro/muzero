@@ -42,7 +42,7 @@ def expand_node(node: Node, to_play: Player, actions: List[Action],
                 network_output: NetworkOutput):
   node.to_play = to_play
   node.hidden_state = network_output.hidden_state
-  node.reward = 0.#network_output.reward
+  node.reward = 0. if network_output.reward is None else network_output.reward
   policy = {a: math.exp(network_output.policy_logits[a]) for a in actions}
   policy_sum = sum(policy.values())
   for action, p in policy.items():
