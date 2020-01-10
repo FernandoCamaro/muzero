@@ -19,6 +19,7 @@ class MarioEnv():
         env = env_wrapper.BufferedObsEnv(env, n=4, skip=1, shape=fshape)
         self.env = env
         self.observation = self.env.reset()
+        self.reward = 0.
         self.game_ended = False
 
     def state(self):
@@ -35,6 +36,7 @@ class MarioEnv():
     def step(self, action: Action):
         obs, reward, done, info = self.env.step(action.index)
         self.observation = obs
+        self.reward = reward
         self.game_ended = done
 
 
