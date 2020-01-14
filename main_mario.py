@@ -24,9 +24,9 @@ def muzero_training(config: MuZeroConfig):
     print("ITER:",i)
     network = storage.latest_network()
     t0 = time.time()
-    run_selfplay(config, network, replay_buffer, 50)
+    run_selfplay(config, network, replay_buffer, 100)
     print("playing time (s):",time.time()-t0)
-    pickle.dump( replay_buffer.buffer, open( "repbuffer_"+str(i)+".pkl", "wb" ) )
+    #pickle.dump( replay_buffer.buffer, open( "repbuffer_"+str(i)+".pkl", "wb" ) )
     t0 = time.time()
     trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
     print("training time (s):",time.time()-t0)
@@ -57,6 +57,7 @@ def play_game(config: MuZeroConfig, network: Network) -> Game:
     # At the root of the search tree we use the representation function to
     # obtain a hidden state given the current observation.
     root = Node(0)
+    root.visit_count += 1
     expand_node(root, game.to_play(), game.legal_actions(), netout)
     add_exploration_noise(config, root)
 
@@ -69,5 +70,5 @@ def play_game(config: MuZeroConfig, network: Network) -> Game:
   return game
 
 tb_logger = SummaryWriter("/tmp/tb_mario")
-config = make_mario_config(12, MarioEnv, 0.005)
+config = make_mario_config(12, MarioEnv, 0.001)
 muzero_training(config)
