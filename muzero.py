@@ -44,7 +44,7 @@ class MuZeroConfig(object):
     self.known_bounds = known_bounds
 
     ### Training
-    self.training_steps = int(5000)
+    self.training_steps = int(1000)
     self.checkpoint_interval = int(1e3)
     self.window_size = int(1e6)
     self.batch_size = batch_size
@@ -122,11 +122,11 @@ def make_mario_config(action_space_size: int, environment, lr_init: float) -> Mu
 
   return MuZeroConfig(
       action_space_size=action_space_size,
-      max_moves=800,
+      max_moves=100,
       discount=0.997,
       dirichlet_alpha=0.25,
       num_simulations=50,
-      batch_size=16,
+      batch_size=128,
       td_steps=15,
       num_actors=350,
       lr_init=lr_init,
