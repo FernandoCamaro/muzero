@@ -83,7 +83,7 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
     # dynamic model loss in order to predict the next hidden state
     if i!=0:
       dynamics_loss = mseloss(hidden_state, hidden_state_from_obs)/num_steps
-      loss += dynamics_loss
+      #loss += dynamics_loss
     
     total_value_loss += value_loss.item()
     total_reward_loss += reward_loss.item() if i!= 0 else 0

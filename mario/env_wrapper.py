@@ -89,6 +89,7 @@ class SkipEnv(gym.Wrapper):
             info['steps'] = i + 1
             if done:
                 break
+        total_reward /= (100*self.skip*2)
         return obs, total_reward, done, info
 
     def reset(self):

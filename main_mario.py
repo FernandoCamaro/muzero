@@ -69,6 +69,6 @@ def play_game(config: MuZeroConfig, network: Network) -> Game:
     game.store_search_statistics(root)
   return game
 
-tb_logger = SummaryWriter("/tmp/tb_mario")
+tb_logger = SummaryWriter("/tmp/tb_mario_extrinsic")
 config = make_mario_config(12, MarioEnv, 0.001)
 muzero_training(config)

@@ -32,13 +32,11 @@ class Game(object):
 
   def apply(self, action: Action, network, netout):
     _ = self.environment.step(action)
-    netout_pred = network.recurrent_inference(netout.hidden_state, action)
     current_observation = self.make_image(-1)
     netout_actual = network.initial_inference(current_observation)
-    hidden_forward_error = netout_actual.hidden_state - netout_pred.hidden_state
-    intrinsic_reward = np.mean(hidden_forward_error**2)
+    extrinsic_reward = self.environment.reward
     self.players.append(Player(self.environment.player))
-    self.rewards.append(intrinsic_reward)
+    self.rewards.append(extrinsic_reward)
     self.history.append(action)
     return netout_actual
 
