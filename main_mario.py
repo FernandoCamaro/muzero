@@ -36,7 +36,7 @@ def muzero_training(config: MuZeroConfig):
                                "rep" : trained_network.rep_model.state_dict(),
                                "dyn" : trained_network.dyn_model.state_dict()}}
                 , "model_"+str(i)+".tar")
-    storage.save_network(step = i, network=trained_network)
+    storage.save_network(step = 0, network=trained_network)
     replay_buffer = ReplayBuffer(config)
     i = i+1
     
