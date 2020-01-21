@@ -95,9 +95,12 @@ def update_weights(optimizer: optim, network: Network, batch, tb_logger, step):
   optimizer.zero_grad()
   loss.backward()
   optimizer.step()
-  del loss, value, reward, policy_logits, hidden_state, hidden_state_from_obs
 
   tb_logger.add_scalar("value_loss",  total_value_loss, step)
   tb_logger.add_scalar("reward_loss", total_reward_loss, step)
   tb_logger.add_scalar("policy_loss", total_policy_loss, step)
   tb_logger.add_scalar("dynamics_loss", total_dynamics_loss, step)
+  tb_logger.add_scalar("hidden_state_max", hidden_state.max(), step)
+  tb_logger.add_scalar("hidden_state_from_obs_max", hidden_state_from_obs.max(), step)
+
+  del loss, value, reward, policy_logits, hidden_state, hidden_state_from_obs
