@@ -16,7 +16,9 @@ from mario.MarioNet import MarioNet as myNetwork
 
 def muzero_training(config: MuZeroConfig):
   storage = SharedStorage(config)
-  storage.save_network(step  = 0, network =  myNetwork(config.action_space_size, cuda = True)) 
+  
+  network =  myNetwork(config.action_space_size, cuda = True)
+  storage.save_network(step  = 0, network = network) 
   replay_buffer = ReplayBuffer(config)
 
   i = 1
@@ -26,7 +28,7 @@ def muzero_training(config: MuZeroConfig):
     t0 = time.time()
     run_selfplay(config, network, replay_buffer, 100)
     print("playing time (s):",time.time()-t0)
-    #pickle.dump( replay_buffer.buffer, open( "repbuffer_"+str(i)+".pkl", "wb" ) )
+    pickle.dump( replay_buffer.get_experience(), open( "repbuffer_"+str(i)+".pkl", "wb" ) )
     t0 = time.time()
     trained_network = train_network(config, storage, replay_buffer, tb_logger, i-1)
     print("training time (s):",time.time()-t0)
@@ -34,7 +36,7 @@ def muzero_training(config: MuZeroConfig):
                                "rep" : trained_network.rep_model.state_dict(),
                                "dyn" : trained_network.dyn_model.state_dict()}}
                 , "model_"+str(i)+".tar")
-    storage.save_network(i, trained_network)
+    storage.save_network(step = i, network=trained_network)
     replay_buffer = ReplayBuffer(config)
     i = i+1
     
