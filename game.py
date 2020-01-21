@@ -36,7 +36,7 @@ class Game(object):
     current_observation = self.make_image(-1)
     netout_actual = network.initial_inference(current_observation)
     hidden_forward_error = netout_actual.hidden_state - netout_pred.hidden_state
-    intrinsic_reward = np.mean(hidden_forward_error**2)
+    intrinsic_reward = np.mean(hidden_forward_error**2)/10
     self.players.append(Player(self.environment.player))
     self.rewards.append(intrinsic_reward)
     self.history.append(action)
