@@ -35,6 +35,9 @@ class ReplayBuffer(object):
       self.buffer.pop(0)
     self.buffer.append(game)
 
+  def get_experience(self):
+    return [(g.history, g.rewards, g.child_visits, g.root_values) for g in self.buffer]
+
   def sample_batch(self, num_unroll_steps: int, td_steps: int):
     games = [self.sample_game() for _ in range(self.batch_size)]
     game_pos = [(g, self.sample_position(g)) for g in games]
