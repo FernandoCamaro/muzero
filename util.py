@@ -53,10 +53,7 @@ class ReplayBuffer(object):
 
   def sample_position(self, game) -> int:
     # Sample position from game either uniformly or according to some priority.
-    if len(game.history) == self.config.max_moves: # game.history and game.root_values should have the same length
-      return numpy.random.randint(0, self.config.max_moves - (self.config.num_unroll_steps + self.config.td_steps))
-    else:
-      return numpy.random.randint(0, len(game.root_values))
+    return numpy.random.randint(0, len(game.root_values))
 
 # At the start of each search, we add dirichlet noise to the prior of the root
 # to encourage the search to explore new actions.
