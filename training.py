@@ -10,13 +10,10 @@ import copy
 
 
 
-def train_network(config: MuZeroConfig, storage: SharedStorage,
+def train_network(config: MuZeroConfig, network, optimizer,
                   replay_buffer: ReplayBuffer, tb_logger, iter_step):
   
-  network = copy.deepcopy(storage.latest_network())
   network.train()
-  optimizer = optim.SGD(network.parameters(), lr=config.lr_init, momentum=config.momentum, weight_decay=config.weight_decay ,nesterov=True)
-
 
   for batch_step in range(config.training_steps):
     batch = replay_buffer.sample_batch(config.num_unroll_steps, config.td_steps)

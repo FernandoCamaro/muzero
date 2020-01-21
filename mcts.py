@@ -31,6 +31,8 @@ def run_mcts(config: MuZeroConfig, root: Node, action_history: ActionHistory,
     parent = search_path[-2]
     network_output = network.recurrent_inference(parent.hidden_state,
                                                  history.last_action())
+    if network.training_steps() < 1:
+      network_output = NetworkOutput(network_output.value, network_output.reward, network.default_action_logits(), network_output.hidden_state)
     expand_node(node, player, history.action_space(), network_output)
 
     backpropagate(search_path, network_output.value, player,

@@ -17,6 +17,8 @@ class MuZeroConfig(object):
                visit_softmax_temperature_fn,
                environment,
                zerosumgame: bool,
+               training_steps: int=int(1e3),
+               window_size: int=int(1e6),
                known_bounds: Optional[KnownBounds] = None):
     ### Self-Play
     self.action_space_size = action_space_size
@@ -44,9 +46,9 @@ class MuZeroConfig(object):
     self.known_bounds = known_bounds
 
     ### Training
-    self.training_steps = int(1000)
+    self.training_steps = training_steps
     self.checkpoint_interval = int(1e3)
-    self.window_size = int(1e6)
+    self.window_size = window_size
     self.batch_size = batch_size
     self.num_unroll_steps = 5
     self.td_steps = td_steps
@@ -111,11 +113,11 @@ def make_atari_config(environment) -> MuZeroConfig:
 def make_mario_config(action_space_size: int, environment, lr_init: float) -> MuZeroConfig:
 
   def visit_softmax_temperature(num_moves, training_steps):
-    if training_steps < 50e3:
+    if training_steps < 5e3:
       return 1.0
-    elif training_steps < 100e3:
+    elif training_steps < 7e3:
       return 0.5
-    elif training_steps < 200e3:
+    elif training_steps < 8e3:
       return 0.2
     else:
       return 0.1
@@ -123,11 +125,13 @@ def make_mario_config(action_space_size: int, environment, lr_init: float) -> Mu
   return MuZeroConfig(
       action_space_size=action_space_size,
       max_moves=100,
+      training_steps=10,
+      window_size=1000,
       discount=0.997,
       dirichlet_alpha=0.25,
       num_simulations=50,
       batch_size=128,
-      td_steps=15,
+      td_steps=10,
       num_actors=350,
       lr_init=lr_init,
       lr_decay_steps=350e3,
