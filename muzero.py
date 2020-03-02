@@ -19,7 +19,9 @@ class MuZeroConfig(object):
                zerosumgame: bool,
                training_steps: int=int(1e3),
                window_size: int=int(1e6),
-               known_bounds: Optional[KnownBounds] = None):
+               known_bounds: Optional[KnownBounds] = None,
+               tau: float=0.005,
+               target_update_interval: int=1):
     ### Self-Play
     self.action_space_size = action_space_size
     self.num_actors = num_actors

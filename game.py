@@ -30,17 +30,17 @@ class Game(object):
     # Game specific calculation of legal actions.
     return self.environment.getLegalActions()
 
-  def apply(self, action: Action, network, netout):
+  def apply(self, action: Action, network, target_network, netout):
     _ = self.environment.step(action)
-    netout_pred = network.recurrent_inference(netout.hidden_state, action)
+    netout_pred = target_network.recurrent_inference(netout.hidden_state, action)
     current_observation = self.make_image(-1)
-    netout_actual = network.initial_inference(current_observation)
+    netout_actual = target_network.initial_inference(current_observation)
     hidden_forward_error = netout_actual.hidden_state - netout_pred.hidden_state
     intrinsic_reward = np.mean(hidden_forward_error**2)/10
     self.players.append(Player(self.environment.player))
     self.rewards.append(intrinsic_reward)
     self.history.append(action)
-    return netout_actual
+    return network.initial_inference(current_observation)
 
   def store_search_statistics(self, root: Node):
     sum_visits = sum(child.visit_count for child in root.children.values())

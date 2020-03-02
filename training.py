@@ -1,5 +1,5 @@
 from muzero import MuZeroConfig
-from util import SharedStorage, ReplayBuffer
+from util import SharedStorage, ReplayBuffer, soft_update
 from network import Network
 
 import torch
@@ -10,7 +10,7 @@ import copy
 
 
 
-def train_network(config: MuZeroConfig, network, optimizer,
+def train_network(config: MuZeroConfig, network, target_network, optimizer,
                   replay_buffer: ReplayBuffer, tb_logger, iter_step):
   
   network.train()
@@ -19,6 +19,8 @@ def train_network(config: MuZeroConfig, network, optimizer,
     batch = replay_buffer.sample_batch(config.num_unroll_steps, config.td_steps)
     update_weights(optimizer, network, batch, tb_logger, config.training_steps*iter_step + batch_step)
     network.tr_steps += 1
+    if network.tr_steps % config.target_update_interval == 0:
+      soft_update(target_network, network, config.tau)
   
   return network
 
